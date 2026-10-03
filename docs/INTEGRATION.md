@@ -15,7 +15,7 @@
 ## 2. 30 秒接入（原生 JS）
 
 ```js
-const BASE = 'https://cdn.jsdelivr.net/gh/<你的GitHub用户名>/seikcha-info-pipeline@main/snapshots';
+const BASE = 'https://cdn.jsdelivr.net/gh/stone-users/seikcha-info-pipeline@main/snapshots';
 const today = new Date().toISOString().slice(0, 10); // 业务日期按北京时间，见 §4
 
 async function loadInfoDay(date) {
@@ -126,7 +126,7 @@ const info = mergeWorstCorridor(['A', 'B'], day);  // day = loadInfoDay(todayStr
 
 ## 8. 状态页（排障/演示用）
 
-`https://<你的GitHub用户名>.github.io/seikcha-info-pipeline/status/`
+`https://stone-users.github.io/seikcha-info-pipeline/status/`
 ——每日自动更新：各数据源链路状态灯（真实/降级/兜底）、今日评分、30 天历史、证据链接。
 如果前端"取不到新数据"，先看状态页就知道是管道问题还是网络问题。
 
