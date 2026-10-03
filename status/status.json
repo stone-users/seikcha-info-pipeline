@@ -1,10 +1,14 @@
 {
   "date": "2026-10-03",
-  "generated_at": "2026-10-03T19:58:39+08:00",
+  "generated_at": "2026-10-03T21:12:21+08:00",
   "pipeline_version": "1.0",
   "run": {
-    "duration_s": 1257.5,
-    "warnings": []
+    "duration_s": 2107.2,
+    "warnings": [
+      "[A] FR15 抓取失败 → 基准档 '平'",
+      "[G] FR15 抓取失败 → 基准档 '平'",
+      "ACLED 不可用 → ct04 使用 GDELT 媒体覆盖代理（真实数据），fr03 按段基准"
+    ]
   },
   "sources": {
     "fr15": {
@@ -12,21 +16,21 @@
       "ok": true,
       "grade": "real",
       "label": "Open-Meteo 实时",
-      "detail": "Open-Meteo 72h降雨 8/8 走廊实时评分"
+      "detail": "Open-Meteo 72h降雨 6/8 走廊实时评分"
     },
     "fr03": {
-      "mode": "acled-oauth",
-      "ok": true,
-      "grade": "real",
-      "label": "ACLED 官方（OAuth）",
-      "detail": "ACLED 官方事件计数（月化非武装）"
+      "mode": "baseline",
+      "ok": false,
+      "grade": "fallback",
+      "label": "基准档兜底",
+      "detail": "ACLED 不可用且 fr03 无可比代理 → 段基准"
     },
     "ct04": {
-      "mode": "acled-oauth",
+      "mode": "gdelt-proxy",
       "ok": true,
-      "grade": "real",
-      "label": "ACLED 官方（OAuth）",
-      "detail": "ACLED 官方计数 7日/90日 比值"
+      "grade": "degraded",
+      "label": "GDELT 媒体代理",
+      "detail": "GDELT 媒体覆盖代理（3/8 走廊真实评分）"
     },
     "ct05": {
       "mode": "baseline",
@@ -46,56 +50,56 @@
   "corridors": {
     "A": {
       "fr15": "平",
-      "fr03": "低",
-      "ct04": 0,
+      "fr03": "段基准",
+      "ct04": 3,
       "ct05": "常规",
       "ct06": "正常"
     },
     "B": {
       "fr15": "平",
-      "fr03": "低",
-      "ct04": 0,
+      "fr03": "段基准",
+      "ct04": 3,
       "ct05": "常规",
       "ct06": "正常"
     },
     "C": {
       "fr15": "平",
-      "fr03": "低",
-      "ct04": 0,
+      "fr03": "段基准",
+      "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "D": {
       "fr15": "平",
-      "fr03": "低",
-      "ct04": 0,
+      "fr03": "段基准",
+      "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "E": {
-      "fr15": "平",
-      "fr03": "低",
-      "ct04": 0,
+      "fr15": "好",
+      "fr03": "段基准",
+      "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "F": {
       "fr15": "平",
-      "fr03": "低",
-      "ct04": 0,
+      "fr03": "段基准",
+      "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "G": {
       "fr15": "平",
-      "fr03": "低",
-      "ct04": 0,
+      "fr03": "段基准",
+      "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "H": {
       "fr15": "平",
-      "fr03": "低",
+      "fr03": "段基准",
       "ct04": 0,
       "ct05": "常规",
       "ct06": "正常"
@@ -103,32 +107,32 @@
   },
   "st_suggestion": {
     "A": {
-      "suggestion": "S1",
-      "basis": "ct04=0, ct05=常规, ct06=正常"
+      "suggestion": "S2",
+      "basis": "ct04=3, ct05=常规, ct06=正常"
     },
     "B": {
-      "suggestion": "S1",
-      "basis": "ct04=0, ct05=常规, ct06=正常"
+      "suggestion": "S2",
+      "basis": "ct04=3, ct05=常规, ct06=正常"
     },
     "C": {
       "suggestion": "S1",
-      "basis": "ct04=0, ct05=常规, ct06=正常"
+      "basis": "ct04=1, ct05=常规, ct06=正常"
     },
     "D": {
       "suggestion": "S1",
-      "basis": "ct04=0, ct05=常规, ct06=正常"
+      "basis": "ct04=1, ct05=常规, ct06=正常"
     },
     "E": {
       "suggestion": "S1",
-      "basis": "ct04=0, ct05=常规, ct06=正常"
+      "basis": "ct04=1, ct05=常规, ct06=正常"
     },
     "F": {
       "suggestion": "S1",
-      "basis": "ct04=0, ct05=常规, ct06=正常"
+      "basis": "ct04=1, ct05=常规, ct06=正常"
     },
     "G": {
       "suggestion": "S1",
-      "basis": "ct04=0, ct05=常规, ct06=正常"
+      "basis": "ct04=1, ct05=常规, ct06=正常"
     },
     "H": {
       "suggestion": "S1",
@@ -139,57 +143,92 @@
     "fr15": [
       {
         "source": "Open-Meteo",
-        "url": "https://api.open-meteo.com/v1/forecast?latitude=17.34,16.89,16.53,17.28,16.72,16.92,16.63,16.87&longitude=96.48,97.63,98.79,97.03,98.51,97.37,96.28,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 仰光港(迪拉瓦) 累积降雨 19.8mm → 平（沿线8城取最大）"
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "note": "抓取失败，本日该走廊按基准档: GET 失败（已重试 2 次）: https://api.open-meteo.com/v1/forecast?latitude=17.34,16.89,16.53,17.28,16.72,16.92,16.63,16.87&longitude=96.48,97.63,98.79,97.03,98.51,97.37,96.28,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon :: <urlopen error _ssl.c:993: The handshake operation timed out>"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=17.34,21.98,20.88,19.76,16.87&longitude=96.48,96.08,95.86,96.08,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 密铁拉 累积降雨 20.8mm → 平（沿线5城取最大）"
+        "note": "未来72h沿线最不利点 内比都 累积降雨 13.6mm → 平（沿线5城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=23.05,22.6,22.94,21.98,23.99&longitude=98.1,97.03,97.75,96.08,97.75&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 贵慨 累积降雨 18.0mm → 平（沿线5城取最大）"
+        "note": "未来72h沿线最不利点 腊戌 累积降雨 12.0mm → 平（沿线5城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=24.05,24.14,21.98,25.38,22.57,22.85&longitude=96.05,96.35,96.08,97.4,95.99,95.62&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 克钦界 累积降雨 16.4mm → 平（沿线6城取最大）"
+        "note": "未来72h沿线最不利点 克钦界 累积降雨 19.9mm → 平（沿线6城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=16.85,16.78,16.87&longitude=95.35,94.73,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 仰光 累积降雨 15.0mm → 平（沿线3城取最大）"
+        "note": "未来72h沿线最不利点 仰光 累积降雨 9.1mm → 好（沿线3城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=14.09,16.48,12.44,16.87&longitude=98.2,97.63,98.6,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 土瓦 累积降雨 23.6mm → 平（沿线4城取最大）"
+        "note": "未来72h沿线最不利点 土瓦 累积降雨 15.7mm → 平（沿线4城取最大）"
       },
       {
         "source": "Open-Meteo",
-        "url": "https://api.open-meteo.com/v1/forecast?latitude=18.95,19.42,20.28&longitude=94.3,93.53,94.93&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 安 累积降雨 13.9mm → 平（沿线3城取最大）"
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "note": "抓取失败，本日该走廊按基准档: GET 失败（已重试 2 次）: https://api.open-meteo.com/v1/forecast?latitude=18.95,19.42,20.28&longitude=94.3,93.53,94.93&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon :: HTTP Error 503: Service Unavailable"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=24.26,24.32,25.38&longitude=96.94,97.42,97.4&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 八莫 累积降雨 16.4mm → 平（沿线3城取最大）"
+        "note": "未来72h沿线最不利点 密支那 累积降雨 17.6mm → 平（沿线3城取最大）"
       }
     ],
     "fr03": [
       {
-        "source": "ACLED（OAuth）",
+        "source": "ACLED",
         "url": "https://acleddata.com/api/acled/read?_format=json",
-        "note": "ACLED 90日窗口事件 0 条，命中走廊 admin1 0 条"
+        "note": "OAuth 直连不可用已降级 GDELT：返回 0 事件（疑似账号数据封存 embargo）→ 不采信。ACLED 90日窗口事件 0 条，命中走廊 admin1 0 条"
       }
     ],
     "ct04": [
       {
-        "source": "ACLED（OAuth）",
-        "url": "https://acleddata.com/api/acled/read?_format=json",
-        "note": "ACLED 90日窗口事件 0 条，命中走廊 admin1 0 条"
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "走廊A 近7日覆盖和=0.0043 ÷ 基线折算7日=0.0008 → r=5.19 → ct04=3（媒体覆盖代理口径）。query=(\"Myawaddy\" OR \"Kawkareik\" OR \"Hpa-an\" OR \"Thaton\" OR \"Kyaikto\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+      },
+      {
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "走廊B 近7日覆盖和=0.0114 ÷ 基线折算7日=0.0037 → r=3.08 → ct04=3（媒体覆盖代理口径）。query=(\"Naypyidaw\" OR \"Meiktila\" OR \"Mandalay\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+      },
+      {
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "抓取失败（限流/网络），走廊C ct04 本日落基准档。query=(\"Muse\" OR \"Lashio\" OR \"Kutkai\" OR \"Kyaukme\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+      },
+      {
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "抓取失败（限流/网络），走廊D ct04 本日落基准档。query=(\"Shwebo\" OR \"Ye-U\" OR \"Katha\" OR \"Myitkyina\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+      },
+      {
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "媒体信号不足（90日非零1天<5），走廊E ct04 落基准档（媒体沉默≠安全）。query=(\"Pathein\" OR \"Hline\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+      },
+      {
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "媒体信号不足（90日非零4天<5），走廊F ct04 落基准档（媒体沉默≠安全）。query=(\"Dawei\" OR \"Myeik\" OR \"Mawlamyine\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+      },
+      {
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "抓取失败（限流/网络），走廊G ct04 本日落基准档。query=(\"Kyaukpyu\" OR \"Ann\" OR \"Magway\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+      },
+      {
+        "source": "GDELT",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
+        "note": "走廊H 近7日覆盖和=0.0000 ÷ 基线折算7日=0.0003 → r=0.00 → ct04=0（媒体覆盖代理口径）。query=(\"Lweje\" OR \"Bhamo\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
       }
     ],
     "ct05": [
