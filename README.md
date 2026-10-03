@@ -28,11 +28,13 @@ ACLED(治安 fr03/冲突 ct04) ─┼→ score.py 规则出分 → validate 校�
 | ST-01 态势 | 人工定级（红线） | — | 每日出**建议档**+证据（快照 `st_suggestion`+审计表） | 维持段档案 |
 
 **ACLED 的两条现实约束（2026-10 实测）**：
-1. acleddata.com 全站被 Cloudflare 托管质询拦截，纯服务端 HTTP（urllib/curl/curl_cffi chrome 指纹）一律
-   403——只有真浏览器能过。认证已改 OAuth（`POST /oauth/token`，grant=password，无 key），
-   token 有效 24h。因此服务端 OAuth 失败时管道**自动降级 GDELT**，不硬闯；
-2. 免费档账号"最近12个月数据封存"（实测 2025-10-03 边界），近期事件需申请全量访问：
-   邮件 access@acleddata.com（学术免费，附学校/用途说明）。
+1. acleddata.com 全站被 Cloudflare 托管质询拦截——**本机/家宽 IP 一律 403，但 GitHub Actions
+   runner IP 实测可直连（OAuth 成功）**。认证已改 OAuth（`POST /oauth/token`，grant=password，无 key），
+   token 有效 24h。服务端失败时管道**自动降级 GDELT**，不硬闯；
+2. 免费档账号"最近12个月数据封存"（实测 2025-10-03 边界）：OAuth 能登录但近期窗口返回
+   **"合法但全零"** ——管道把 90 日 0 事件识别为不可信（采信会把 fr03 误打成'低'、ct04 打成 0，
+   违反"媒体沉默≠安全"），自动降级 GDELT 并留痕。近期事件需申请全量访问：
+   邮件 access@acleddata.com（学术免费，附学校/用途说明），获批后官方数据自动恢复，无需改代码。
 
 **浏览器辅助缓存（本地演示级真实数据）**：登录 ACLED 后在站点页内 fetch 导出 90 天 slim 事件 →
 `cache/acled_events_cache.json`（窗口覆盖近90天且非空即生效），管道自动读取聚合。
@@ -84,14 +86,23 @@ ACLED 凭证（可选增强）：`copy .env.example .env` 后填 `ACLED_EMAIL` /
 ## 部署（GitHub 全托管）
 
 1. 本仓库 push 到你的 GitHub（公开仓库）；
-2. Settings → Secrets → Actions 添加 `ACLED_EMAIL`、`ACLED_PASSWORD`（可选；
-   Actions 服务器 IP 大概率仍被 Cloudflare 拦，管道自动降级 GDELT 并留痕，不影响每日产出）；
+2. Settings → Secrets → Actions 添加 `ACLED_EMAIL`、`ACLED_PASSWORD`（可选但推荐：
+   **Actions runner IP 实测可通过 Cloudflare 直连 OAuth**；当前免费档数据封存期间返回 0 事件，
+   管道自动识别不采信并降级 GDELT，获批全量访问后自动恢复官方数据）；
 3. Actions 启用 `daily-info-snapshot`（默认每日 01:00 UTC = 北京 09:00，可手动 workflow_dispatch）；
 4. 网站拉取地址（二选一，均带 CORS）：
    - jsDelivr（主）：`https://cdn.jsdelivr.net/gh/<你的用户名>/seikcha-info-pipeline@main/snapshots/2026-10-03.json`
    - GitHub Pages（备）：仓库 Settings → Pages → Deploy from branch (main / root) 后
      `https://<你的用户名>.github.io/seikcha-info-pipeline/snapshots/latest.json`
 5. 网站侧在 `webapp/.env.production` 设 `VITE_INFO_SNAPSHOT_BASE=<上述目录URL>` 重新 build。
+
+**运维备忘（2026-10-03 首跑实测）**：
+- 本机 git push 需走系统代理：`git -c http.proxy=http://127.0.0.1:7899 push`（gh api 直连可用）；
+  推送凭证走 `gh auth setup-git`（fine-grained PAT 需 All repositories + Administration/Contents/Actions 读写）。
+- jsDelivr 对 `@main` 分支引用缓存约 12h：**同日重写文件后需手动刷缓存**
+  `curl https://purge.jsdelivr.net/gh/stone-users/seikcha-info-pipeline@main/snapshots/latest.json`；
+  正常每日一写的日期寻址文件无需关心。
+- 手动 workflow_dispatch 重跑同一业务日期会重写当日快照（latest wins），审计依赖 git 历史。
 
 ## 每日状态页（GitHub Pages）
 
