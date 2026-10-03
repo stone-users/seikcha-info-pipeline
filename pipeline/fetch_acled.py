@@ -193,6 +193,14 @@ def fetch_security(day: date, mock: bool = False) -> tuple[dict[str, dict] | Non
         try:
             events = _fetch_events(day, email, password)
             stats, agg_note = _aggregate(events, day)
+            # 防"合法但全零"：Myanmar 90 日 0 事件不可信（免费档 12 个月数据封存
+            # 或数据故障都长这样）。采信会把 fr03 打成 '低'、ct04 打成 0，
+            # 等于按"缺数据"降保费 → 违反"媒体沉默≠安全"。不采信 → 转 GDELT 代理；
+            # 账号获批全量访问后此处自然返回非零，自动恢复官方数据，无需改配置。
+            if not events:
+                raise AcledUnavailable(f"返回 0 事件（疑似账号数据封存 embargo）→ 不采信。{agg_note}")
+            if sum(s["nonarmed_30d"] + s["armed_90d"] for s in stats.values()) == 0:
+                raise AcledUnavailable(f"{len(events)} 条事件无一命中走廊 admin1 → 不可比，不采信。{agg_note}")
             return stats, [{"source": "ACLED（OAuth）", "url": READ_URL,
                             "note": f"{agg_note}"}], "acled-oauth"
         except AcledUnavailable as e:

@@ -9,7 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "pipeline"))
 
 import unittest
 
-from fetch_acled import _aggregate
+import fetch_acled
+from fetch_acled import _aggregate, fetch_security
 
 DAY = date(2026, 10, 3)
 
@@ -62,6 +63,58 @@ class TestAggregate(unittest.TestCase):
         events = [{"event_date": "garbage", "event_type": "Battles", "admin1": "Yangon"}]
         stats, _ = _aggregate(events, DAY)
         self.assertEqual(stats["B"]["armed_90d"], 0)
+
+
+class TestImplausibleZeroGuard(unittest.TestCase):
+    """防"合法但全零"：embargo/数据故障返回 0 事件不得采信为"低治安/平静"，
+    必须 AcledUnavailable → 降级 GDELT（媒体沉默≠安全红线）。"""
+
+    def _oauth_env(self):
+        import os
+        os.environ["ACLED_EMAIL"] = "test@example.org"
+        os.environ["ACLED_PASSWORD"] = "x"
+        self.addCleanup(os.environ.pop, "ACLED_EMAIL", None)
+        self.addCleanup(os.environ.pop, "ACLED_PASSWORD", None)
+
+    def test_zero_events_not_trusted(self):
+        self._oauth_env()
+        orig = (fetch_acled._load_cache, fetch_acled._fetch_events)
+        fetch_acled._load_cache = lambda day: None
+        fetch_acled._fetch_events = lambda day, e, p: []
+        try:
+            stats, evidence, mode = fetch_security(DAY, mock=False)
+        finally:
+            fetch_acled._load_cache, fetch_acled._fetch_events = orig
+        self.assertIsNone(stats)
+        self.assertEqual(mode, "fallback-gdelt")
+        self.assertIn("0 事件", evidence[0]["note"])
+
+    def test_rows_but_zero_mapped_not_trusted(self):
+        self._oauth_env()
+        orig = (fetch_acled._load_cache, fetch_acled._fetch_events)
+        fetch_acled._load_cache = lambda day: None
+        # 有事件但 admin1 全部不命中（映射失效场景）→ 同样不采信
+        fetch_acled._fetch_events = lambda day, e, p: [ev(DAY, "Battles", "Atlantis")]
+        try:
+            stats, evidence, mode = fetch_security(DAY, mock=False)
+        finally:
+            fetch_acled._load_cache, fetch_acled._fetch_events = orig
+        self.assertIsNone(stats)
+        self.assertEqual(mode, "fallback-gdelt")
+        self.assertIn("不可比", evidence[0]["note"])
+
+    def test_real_data_still_trusted(self):
+        self._oauth_env()
+        orig = (fetch_acled._load_cache, fetch_acled._fetch_events)
+        fetch_acled._load_cache = lambda day: None
+        fetch_acled._fetch_events = lambda day, e, p: [ev(DAY, "Battles", "Yangon")]
+        try:
+            stats, evidence, mode = fetch_security(DAY, mock=False)
+        finally:
+            fetch_acled._load_cache, fetch_acled._fetch_events = orig
+        self.assertIsNotNone(stats)
+        self.assertEqual(mode, "acled-oauth")
+        self.assertEqual(stats["B"]["armed_7d"], 1)
 
 
 if __name__ == "__main__":
