@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEIKCHA 信息层管道 · 每日状态</title>
+<style>
+  :root {
+    --green: #16a34a; --amber: #d97706; --red: #dc2626; --slate: #475569;
+    --line: #e2e8f0; --bg: #f8fafc; --card: #ffffff; --ink: #0f172a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+         background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.55; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 48px; }
+  header h1 { font-size: 22px; margin: 0 0 4px; }
+  header p.sub { margin: 0 0 16px; color: var(--slate); font-size: 13px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .chip { background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+          padding: 3px 12px; font-size: 12px; color: var(--slate); }
+  .chip b { color: var(--ink); }
+  .chip.warn { border-color: #fcd34d; background: #fffbeb; color: #92400e; }
+  h2 { font-size: 16px; margin: 28px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .card .name { font-weight: 700; font-size: 13px; }
+  .card .code { color: var(--slate); font-weight: 400; font-size: 11px; margin-left: 4px; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+  .dot.real { background: var(--green); } .dot.degraded { background: var(--amber); } .dot.fallback { background: var(--red); }
+  .card .detail { color: var(--slate); font-size: 12px; margin-top: 6px; }
+  .card .label { font-size: 12px; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; background: var(--card);
+          border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); font-size: 13px; }
+  th { background: #f1f5f9; color: var(--slate); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  .scroll { overflow-x: auto; }
+  .badge { display: inline-block; border-radius: 6px; padding: 1px 8px; font-size: 12px; white-space: nowrap; }
+  .b-ok { background: #f1f5f9; color: var(--ink); }
+  .b-warn { background: #fef3c7; color: #92400e; }
+  .b-bad { background: #fee2e2; color: #991b1b; }
+  .b-good { background: #dcfce7; color: #166534; }
+  .note { color: var(--slate); font-size: 12px; margin: 8px 0 0; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+            padding: 10px 14px; margin-bottom: 8px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+  details ul { margin: 8px 0 0; padding-left: 18px; }
+  details li { font-size: 12px; color: var(--slate); margin-bottom: 6px; word-break: break-all; }
+  details a { color: #2563eb; text-decoration: none; }
+  footer { margin-top: 32px; padding-top: 14px; border-top: 1px solid var(--line);
+           color: var(--slate); font-size: 12px; }
+  .err { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 10px;
+         padding: 14px 16px; margin: 12px 0; }
+  .st-disclaimer { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e;
+                   border-radius: 10px; padding: 10px 14px; font-size: 12px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>SEIKCHA 信息层管道 · 每日状态</h1>
+    <p class="sub">缅甸内陆运输保险定价 — 信息因子每日自动抓取与评分（AI 抽证据 · 规则卡打分 · 全程留痕）</p>
+  </header>
+  <div id="chips" class="chips"></div>
+  <div id="err" class="err" style="display:none"></div>
+
+  <h2>今日数据源链路</h2>
+  <div id="sources" class="grid"></div>
+
+  <h2>今日走廊评分（8 走廊 × 5 信息参数）</h2>
+  <div class="scroll"><table id="corr"></table></div>
+
+  <h2>ST-01 态势建议（人工定级参考）</h2>
+  <div class="scroll"><table id="st"></table></div>
+  <p class="st-disclaimer">
+    红线：ST-01 态势状态为<b>人工定级</b>（月事件计数+准入+证实遇袭）；承保区域转移须人工批准并留痕。
+    本表仅为管道每日建议档，<b>不自动生效、不修改 segments.json</b>。
+  </p>
+
+  <h2>近 30 天运行历史</h2>
+  <div class="scroll"><table id="hist"></table></div>
+  <p class="note">链路档：绿=真实数据源 · 琥珀=降级链（缓存/代理/新闻检索，仍为真实信号） · 红=基准档兜底或联调数据。历史由每日快照 evidence 派生。</p>
+
+  <h2>今日证据（审计留痕）</h2>
+  <div id="evidence"></div>
+
+  <footer>
+    披露：媒体沉默≠安全——无证据走廊按基准档处理，不解读为安全；ct05/ct06"关闭"级须≥2 独立新闻域名佐证；
+    媒体滞后性意味着评级变化可能滞后于实况。每次发布即一次 git 提交（谁=bot / 何时=提交时间 / 证据=本页与 audit/*.md）。
+    <br>SEIKCHA · 中央财经大学"三创赛" — info-pipeline 状态页由 GitHub Actions 每日 01:00 UTC 自动生成。
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  var FACTOR_NAMES = { fr15: "天气预报", fr03: "治安热度", ct04: "冲突波动", ct05: "节点安全", ct06: "口岸运行" };
+  var SOURCES = ["fr15", "fr03", "ct04", "ct05", "ct06"];
+  var CIDS = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  var CID_NAMES = { A: "东南线 妙瓦底→仰光", B: "中纵线 仰光→曼德勒", C: "东北线 曼德勒→木姐",
+                    D: "西北线 曼德勒→密支那", E: "仰光-勃生", F: "土瓦-丹老", G: "皎漂-马圭", H: "雷基-八莫" };
+
+  function badge(v) {
+    var s = String(v);
+    if (s === "关闭" || s === "极端" || s === "极高" || s === "3" || s === "S3") return "b-bad";
+    if (s === "收紧" || s === "拥堵" || s === "暴雨" || s === "高" || s === "2" || s === "S2") return "b-warn";
+    if (s === "低" || s === "好" || s === "0" || s === "S1") return "b-good";
+    return "b-ok";
+  }
+  function showErr(msg) {
+    var e = document.getElementById("err");
+    e.style.display = "block";
+    e.textContent = msg;
+  }
+
+  fetch("status.json").then(function (r) {
+    if (!r.ok) throw new Error("status.json HTTP " + r.status);
+    return r.json();
+  }).then(function (st) {
+    var chips = document.getElementById("chips");
+    chips.innerHTML =
+      '<span class="chip">业务日期 <b>' + esc(st.date) + '</b></span>' +
+      '<span class="chip">生成于 <b>' + esc(st.generated_at) + '</b>（UTC+8）</span>' +
+      '<span class="chip">管线 <b>v' + esc(st.pipeline_version) + '</b></span>' +
+      '<span class="chip">耗时 <b>' + esc(st.run.duration_s) + 's</b></span>' +
+      (st.run.warnings.length ? '<span class="chip warn">告警 ' + st.run.warnings.length + ' 条</span>' : '');
+
+    var sg = document.getElementById("sources");
+    sg.innerHTML = SOURCES.map(function (f) {
+      var s = st.sources[f] || {};
+      return '<div class="card"><div class="name"><span class="dot ' + esc(s.grade) + '"></span>' +
+        esc(FACTOR_NAMES[f]) + '<span class="code">' + f + '</span></div>' +
+        '<div class="label">' + esc(s.label) + '</div>' +
+        '<div class="detail">' + esc(s.detail) + '</div></div>';
+    }).join("");
+
+    var ct = document.getElementById("corr");
+    ct.innerHTML = "<tr><th>走廊</th><th>名称</th>" + SOURCES.map(function (f) {
+      return "<th>" + esc(FACTOR_NAMES[f]) + "</th>";
+    }).join("") + "</tr>" + CIDS.map(function (cid) {
+      var c = (st.corridors || {})[cid] || {};
+      return "<tr><td><b>" + cid + "</b></td><td>" + esc(CID_NAMES[cid]) + "</td>" +
+        SOURCES.map(function (f) {
+          return '<td><span class="badge ' + badge(c[f]) + '">' + esc(c[f] == null ? "—" : c[f]) + "</span></td>";
+        }).join("") + "</tr>";
+    }).join("");
+
+    var stt = document.getElementById("st");
+    stt.innerHTML = "<tr><th>走廊</th><th>建议档</th><th>依据（ct04 / ct05 / ct06）</th></tr>" +
+      CIDS.map(function (cid) {
+        var s = (st.st_suggestion || {})[cid] || {};
+        return "<tr><td><b>" + cid + "</b> " + esc(CID_NAMES[cid]) + "</td>" +
+          '<td><span class="badge ' + badge(s.suggestion) + '">' + esc(s.suggestion || "—") + "</span></td>" +
+          "<td>" + esc(s.basis || "—") + "</td></tr>";
+      }).join("");
+
+    var evg = document.getElementById("evidence");
+    var ev = st.evidence || {};
+    evg.innerHTML = SOURCES.map(function (f) {
+      var list = ev[f] || [];
+      if (!list.length) return "";
+      return "<details><summary>" + esc(FACTOR_NAMES[f]) + "（" + list.length + " 条）</summary><ul>" +
+        list.map(function (e) {
+          return "<li>[" + esc(e.source) + "] " + esc(e.note) +
+            (e.url ? ' — <a href="' + esc(e.url) + '" target="_blank" rel="noopener">证据链接</a>' : "") + "</li>";
+        }).join("") + "</ul></details>";
+    }).join("") || '<p class="note">今日无证据条目。</p>';
+
+    if (st.run.warnings.length) {
+      evg.insertAdjacentHTML("afterbegin",
+        '<details open><summary>今日告警（' + st.run.warnings.length + ' 条）</summary><ul>' +
+        st.run.warnings.map(function (w) { return "<li>" + esc(w) + "</li>"; }).join("") + "</ul></details>");
+    }
+  }).catch(function (e) {
+    showErr("状态数据加载失败（可能首日运行尚未生成 status.json）：" + e.message);
+  });
+
+  fetch("history.json").then(function (r) {
+    if (!r.ok) throw new Error("skip");
+    return r.json();
+  }).then(function (h) {
+    var ht = document.getElementById("hist");
+    var days = (h && h.days) || [];
+    if (!days.length) { ht.innerHTML = '<tr><td>暂无历史（随每日运行累积）</td></tr>'; return; }
+    ht.innerHTML = "<tr><th>日期</th>" + SOURCES.map(function (f) {
+      return "<th>" + esc(FACTOR_NAMES[f]) + "</th>";
+    }).join("") + "<th>ST 最高建议</th></tr>" + days.slice().reverse().map(function (d) {
+      var s = d.sources || {};
+      return "<tr><td>" + esc(d.date) + "</td>" + SOURCES.map(function (f) {
+        var m = s[f] || "baseline";
+        return '<td><span class="dot ' + (m === "openmeteo" || m === "acled-oauth" ? "real" :
+          m === "acled-cache" || m === "gdelt-proxy" || m === "gdelt-news" ? "degraded" : "fallback") +
+          '"></span>' + esc(m) + "</td>";
+      }).join("") + '<td><span class="badge ' + badge(d.st_max) + '">' + esc(d.st_max || "—") + "</span></td></tr>";
+    }).join("");
+  }).catch(function () {
+    document.getElementById("hist").innerHTML = '<tr><td>暂无历史（随每日运行累积）</td></tr>';
+  });
+})();
+</script>
+</body>
+</html>

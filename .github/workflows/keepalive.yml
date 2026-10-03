@@ -1,0 +1,23 @@
+# 防停摆：GitHub 对 60 天无提交的仓库会停用定时工作流。
+# 每日快照本身就是每日提交，通常到不了这一步；本任务为兜底空提交。
+name: weekly-keepalive
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # 每周一 03:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 空提交保持仓库活跃
+        run: |
+          git config user.name "seikcha-info-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git commit --allow-empty -m "keepalive: 防止定时工作流被停用"
+          git push

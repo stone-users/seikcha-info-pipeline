@@ -1,0 +1,5 @@
+.env
+.acled_session.json
+cache/
+__pycache__/
+*.pyc
