@@ -27,15 +27,6 @@ ACLED(治安 fr03/冲突 ct04) ─┼→ score.py 规则出分 → validate 校�
 | ct06 口岸运行 | — | — | **GDELT 口岸新闻+规则初判**（同上） | 基准档 '正常' |
 | ST-01 态势 | 人工定级（红线） | — | 每日出**建议档**+证据（快照 `st_suggestion`+审计表） | 维持段档案 |
 
-**ACLED 的两条现实约束（2026-10 实测）**：
-1. acleddata.com 全站被 Cloudflare 托管质询拦截——**本机/家宽 IP 一律 403，但 GitHub Actions
-   runner IP 实测可直连（OAuth 成功）**。认证已改 OAuth（`POST /oauth/token`，grant=password，无 key），
-   token 有效 24h。服务端失败时管道**自动降级 GDELT**，不硬闯；
-2. 免费档账号"最近12个月数据封存"（实测 2025-10-03 边界）：OAuth 能登录但近期窗口返回
-   **"合法但全零"** ——管道把 90 日 0 事件识别为不可信（采信会把 fr03 误打成'低'、ct04 打成 0，
-   违反"媒体沉默≠安全"），自动降级 GDELT 并留痕。近期事件需申请全量访问：
-   邮件 access@acleddata.com（学术免费，附学校/用途说明），获批后官方数据自动恢复，无需改代码。
-
 **浏览器辅助缓存（本地演示级真实数据）**：登录 ACLED 后在站点页内 fetch 导出 90 天 slim 事件 →
 `cache/acled_events_cache.json`（窗口覆盖近90天且非空即生效），管道自动读取聚合。
 该文件与 `.env`、`.acled_session.json` 均已 gitignore（含原始事件行，不公开分发——ACLED 条款）。
