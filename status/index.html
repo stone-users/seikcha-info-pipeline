@@ -6,132 +6,140 @@
 <title>SEIKCHA 信息层 · 每日监控台</title>
 <style>
   :root {
-    --brand: #e8760d; --brand-deep: #b4530a; --brand-2: #f59d3d; --gold: #e8760d; --gold-soft: #f8d9b8;
-    --ink: #2d2013; --slate: #7a6a58; --faint: #a08d77;
-    --line: #f0ddc8; --bg: #faf1e6; --card: #fffdfa;
-    --green: #1e7a4f; --blue: #2563eb; --slateb: #64748b;
+    --ink: #26221d;         /* 深墨主字色 */
+    --sub: #6b6459;         /* 次级灰 */
+    --faint: #a39b8f;       /* 弱化灰 */
+    --line: #e9e4dc;        /* 边线 */
+    --bg: #ffffff;          /* 页面白 */
+    --tint: #faf8f5;        /* 浅暖灰块 */
+    --orange: #ea6a1e;      /* 品牌橙（强调，取自计划书封面） */
+    --orange-soft: #fdeee1;
+    --green: #1a7f4e;
+    --green-soft: #e3f2e9;
+    --red: #c0392b;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
-    background: linear-gradient(180deg, var(--bg) 0%, #fdf8f2 420px);
-    color: var(--ink); font-size: 14px; line-height: 1.55; min-height: 100vh;
-  }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 20px 18px 56px; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+         font-size: 15px; line-height: 1.6; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px 64px; }
 
-  /* ---- 头部渐变横幅（计划书封面同源橙） ---- */
-  .hero {
-    position: relative; overflow: hidden; border-radius: 18px;
-    background: linear-gradient(128deg, #b4530a 0%, var(--brand) 52%, var(--brand-2) 100%);
-    color: #fff; padding: 26px 28px; display: flex; flex-wrap: wrap; gap: 18px;
-    align-items: center; justify-content: space-between;
-    box-shadow: 0 10px 30px -12px rgba(180, 83, 10, .5);
-    border-bottom: 3px solid #2d2013;
-  }
-  .hero::after {  /* 右上装饰光斑 */
-    content: ""; position: absolute; right: -70px; top: -90px; width: 260px; height: 260px;
-    background: radial-gradient(circle, rgba(255,255,255,.22) 0%, transparent 68%); pointer-events: none;
-  }
-  .hero .kicker { font-size: 11px; letter-spacing: .22em; opacity: .92; margin-bottom: 6px; color: #ffe3c2; }
-  .hero h1 { margin: 0; font-size: 24px; letter-spacing: .04em; }
-  .hero .sub { margin: 6px 0 0; font-size: 12.5px; opacity: .85; max-width: 560px; }
-  .hero .datebox { text-align: center; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28);
-    border-radius: 14px; padding: 10px 22px; backdrop-filter: blur(4px); position: relative; }
-  .hero .datebox .d { font-size: 20px; font-weight: 800; letter-spacing: .04em; }
-  .hero .datebox .t { font-size: 11px; opacity: .82; margin-top: 2px; }
+  /* ---- 顶栏（白底扁平） ---- */
+  .topbar { display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: baseline; gap: 10px; }
+  .logo .wordmark { font-size: 19px; font-weight: 800; letter-spacing: .02em; }
+  .logo .wordmark b { color: var(--orange); }
+  .logo .dept { font-size: 12px; color: var(--sub); border-left: 1px solid var(--line); padding-left: 10px; }
+  .topbar .datechip { font-size: 13px; color: var(--sub); background: var(--tint);
+                      border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; }
+  .topbar .datechip b { color: var(--ink); }
 
-  /* ---- KPI 概览 ---- */
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0 6px; }
-  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px;
-         box-shadow: 0 1px 2px rgba(180, 83, 10, .06); }
-  .kpi .label { font-size: 11.5px; color: var(--faint); letter-spacing: .05em; }
-  .kpi .val { font-size: 21px; font-weight: 800; margin-top: 3px; line-height: 1.2; }
-  .kpi .sub { font-size: 11.5px; color: var(--slate); margin-top: 2px; }
-  .kpi.ok .val { color: var(--green); } .kpi.mid .val { color: var(--gold); } .kpi.bad .val { color: var(--red, #b91c1c); }
+  /* ---- 页头（无渐变：浅暖底 + 大标题） ---- */
+  .hero { background: var(--tint); border: 1px solid var(--line); border-radius: 16px;
+          padding: 30px 32px; margin-top: 22px; }
+  .hero .kicker { font-size: 12px; font-weight: 700; color: var(--orange); letter-spacing: .14em; margin-bottom: 8px; }
+  .hero h1 { margin: 0 0 8px; font-size: 27px; font-weight: 800; letter-spacing: .01em; }
+  .hero p { margin: 0; color: var(--sub); font-size: 14px; max-width: 640px; }
+  .hero .meta { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero .meta span { font-size: 12px; color: var(--sub); background: var(--bg);
+                     border: 1px solid var(--line); border-radius: 8px; padding: 3px 10px; }
+  .hero .meta span b { color: var(--ink); }
+
+  /* ---- KPI ---- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 16px; }
+  .kpi { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .kpi .label { font-size: 12px; color: var(--sub); font-weight: 600; }
+  .kpi .val { font-size: 24px; font-weight: 800; margin-top: 4px; line-height: 1.15; }
+  .kpi .sub { font-size: 12px; color: var(--faint); margin-top: 3px; }
+  .kpi.ok .val { color: var(--green); } .kpi.mid .val { color: var(--orange); } .kpi.bad .val { color: var(--red); }
 
   /* ---- 今日综述 ---- */
-  .brief { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--gold);
-           border-radius: 14px; padding: 14px 18px; margin-top: 12px;
-           box-shadow: 0 1px 2px rgba(180, 83, 10, .06); }
-  .brief .bt { font-weight: 700; font-size: 13px; color: var(--brand-deep); }
-  .brief .bt .tag { font-weight: 400; font-size: 11px; color: var(--faint); margin-left: 8px; }
-  .brief p { margin: 8px 0 0; font-size: 13px; color: var(--ink); }
+  .brief { background: var(--orange-soft); border: 1px solid #f5d9bf; border-radius: 14px;
+           padding: 16px 20px; margin-top: 14px; }
+  .brief .bt { font-weight: 800; font-size: 14px; }
+  .brief .bt .tag { font-weight: 400; font-size: 11.5px; color: var(--sub); margin-left: 8px; }
+  .brief p { margin: 7px 0 0; font-size: 13.5px; }
 
   /* ---- 区块标题 ---- */
-  h2 { display: flex; align-items: center; gap: 10px; font-size: 16.5px; margin: 30px 0 12px; letter-spacing: .01em; }
-  h2::before { content: ""; width: 4px; height: 18px; border-radius: 2px;
-               background: linear-gradient(180deg, var(--gold), var(--brand)); }
-  h2 .hint { font-size: 12px; font-weight: 400; color: var(--faint); margin-left: 2px; }
+  h2 { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800;
+       margin: 36px 0 12px; }
+  h2::before { content: ""; width: 6px; height: 20px; border-radius: 3px; background: var(--orange); }
+  h2 .hint { font-size: 12.5px; font-weight: 400; color: var(--faint); margin-left: 2px; }
 
   /* ---- 数据源卡片 ---- */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 12px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
-          box-shadow: 0 1px 2px rgba(180, 83, 10, .06); transition: box-shadow .18s, transform .18s; }
-  .card:hover { box-shadow: 0 8px 20px -8px rgba(180, 83, 10, .22); transform: translateY(-2px); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(198px, 1fr)); gap: 14px; }
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 15px 16px;
+          transition: border-color .15s, box-shadow .15s; }
+  .card:hover { border-color: #f0c9a4; box-shadow: 0 6px 18px -8px rgba(234, 106, 30, .18); }
   .card .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .card .name { font-weight: 700; font-size: 13.5px; }
-  .card .code { color: var(--faint); font-weight: 600; font-size: 11px; }
-  .pill { border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-  .pill.real { background: #d8ecd9; color: #14532d; }
-  .pill.degraded { background: #fde3cd; color: #b4530a; }
-  .pill.fallback { background: #eceae5; color: #57534e; }
-  .card .label { font-size: 12.5px; color: var(--ink); margin-top: 9px; font-weight: 600; }
-  .card .detail { color: var(--slate); font-size: 12px; margin-top: 4px; line-height: 1.5; }
+  .card .name { font-weight: 800; font-size: 14px; }
+  .card .code { color: var(--faint); font-weight: 600; font-size: 11px; margin-left: 4px; }
+  .pill { border-radius: 999px; padding: 2.5px 11px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .pill.real { background: var(--green-soft); color: var(--green); }
+  .pill.degraded { background: var(--orange-soft); color: #b4530a; }
+  .pill.fallback { background: #eeede9; color: #57534e; }
+  .card .label { font-size: 13px; margin-top: 10px; font-weight: 700; }
+  .card .detail { color: var(--sub); font-size: 12.5px; margin-top: 4px; }
 
-  /* ---- 表格 ---- */
-  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
-           box-shadow: 0 1px 2px rgba(180, 83, 10, .06); }
+  /* ---- 表格面板 ---- */
+  .panel { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .scroll { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th { background: #fbe9d7; color: var(--slate); font-weight: 600; font-size: 12px; letter-spacing: .03em; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { padding: 11px 15px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { background: var(--tint); color: var(--sub); font-weight: 700; font-size: 12.5px; }
   tr:last-child td { border-bottom: none; }
-  tbody tr { transition: background .12s; }
-  tbody tr:hover { background: #fdf3e7; }
-  .badge { display: inline-block; border-radius: 7px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
-  .b-ok { background: #f7ead9; color: var(--ink); }
-  .b-warn { background: #fdeecd; color: #854d0e; }
-  .b-bad { background: #fbe3e4; color: #9f1d20; }
-  .b-good { background: #d8ecd9; color: #14532d; }
-  .note { color: var(--slate); font-size: 12px; margin: 9px 2px 0; }
+  tbody tr:hover { background: #fdf8f2; }
+  .badge { display: inline-block; border-radius: 7px; padding: 2px 10px; font-size: 12.5px; font-weight: 700; }
+  .b-ok { background: var(--tint); color: var(--ink); }
+  .b-warn { background: var(--orange-soft); color: #b4530a; }
+  .b-bad { background: #fbe3e0; color: var(--red); }
+  .b-good { background: var(--green-soft); color: var(--green); }
+  .note { color: var(--sub); font-size: 12.5px; margin: 10px 2px 0; }
 
   /* ---- ST-01 提示条 / 证据 / 页脚 ---- */
-  .st-banner { display: flex; gap: 10px; align-items: flex-start; background: #fbf7ea; border: 1px solid var(--gold-soft);
-               border-radius: 14px; padding: 12px 16px; font-size: 12.5px; color: #6d5310; margin-top: 12px; }
-  .st-banner b { color: #4d3c08; }
-  details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 4px 16px;
-            margin-bottom: 10px; box-shadow: 0 1px 2px rgba(180, 83, 10, .06); }
-  summary { cursor: pointer; font-weight: 600; font-size: 13px; padding: 10px 0; }
-  details ul { margin: 4px 0 12px; padding-left: 18px; }
-  details li { font-size: 12px; color: var(--slate); margin-bottom: 7px; word-break: break-all; }
-  details a { color: #c25500; text-decoration: none; }
+  .st-banner { display: flex; gap: 10px; align-items: flex-start; background: var(--tint);
+               border: 1px solid var(--line); border-left: 4px solid var(--orange);
+               border-radius: 12px; padding: 13px 17px; font-size: 13px; color: var(--sub); margin-top: 12px; }
+  .st-banner b { color: var(--ink); }
+  details { background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+            padding: 4px 16px; margin-bottom: 10px; }
+  summary { cursor: pointer; font-weight: 700; font-size: 13.5px; padding: 11px 0; }
+  details ul { margin: 4px 0 13px; padding-left: 18px; }
+  details li { font-size: 12.5px; color: var(--sub); margin-bottom: 7px; word-break: break-all; }
+  details a { color: var(--orange); text-decoration: none; font-weight: 600; }
   details a:hover { text-decoration: underline; }
-  footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
-           color: var(--faint); font-size: 12px; }
-  .err { background: #fbe3e4; color: #9f1d20; border: 1px solid #f3c1c3; border-radius: 14px;
-         padding: 16px 18px; margin: 14px 0; }
+  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line);
+           color: var(--faint); font-size: 12.5px; }
+  .err { background: #fbe3e0; color: var(--red); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
   @media (max-width: 640px) {
-    .hero { padding: 20px; } .hero .datebox { width: 100%; }
-    th, td { padding: 8px 10px; }
+    .hero { padding: 22px; }
+    th, td { padding: 9px 10px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="hero">
-    <div>
-      <div class="kicker">SEIKCHA INSURTECH · 保险学院</div>
-      <h1>信息层每日监控台</h1>
-      <p class="sub">缅甸内陆运输保险定价 — 信息因子每日自动抓取与评分。纪律：AI 抽证据 · 评分卡规则打分 · 全程 git 留痕。</p>
+  <div class="topbar">
+    <div class="logo">
+      <span class="wordmark">SEIKCHA <b>INSURTECH</b></span>
+      <span class="dept">中央财经大学 保险学院</span>
     </div>
-    <div class="datebox"><div class="d" id="hero-date">—</div><div class="t" id="hero-time">等待数据…</div></div>
+    <div class="datechip">数据日期 <b id="top-date">—</b></div>
+  </div>
+
+  <div class="hero">
+    <div class="kicker">INFO-PIPELINE · 每日监控台</div>
+    <h1>信息层每日数据监控</h1>
+    <p>缅甸内陆运输保险定价 — 信息因子每日自动抓取与评分。官方与公开媒体双轨数据源，AI 抽取证据、评分卡规则打分、git 全程留痕。</p>
+    <div class="meta" id="hero-meta"></div>
   </div>
 
   <div class="kpis">
     <div class="kpi" id="kpi-health"><div class="label">今日数据覆盖</div><div class="val">—</div><div class="sub">加载中…</div></div>
     <div class="kpi" id="kpi-warn"><div class="label">今日告警</div><div class="val">—</div><div class="sub">加载中…</div></div>
     <div class="kpi" id="kpi-st"><div class="label">态势最高建议</div><div class="val">—</div><div class="sub">ST-01 · 人工定级参考</div></div>
-    <div class="kpi" id="kpi-run"><div class="label">运行耗时</div><div class="val">—</div><div class="sub">加载中…</div></div>
+    <div class="kpi" id="kpi-run"><div class="label">运行耗时</div><div class="val">—</div><div class="sub">抓取+评分+校验+发布</div></div>
   </div>
   <div class="brief" id="brief" style="display:none">
     <div class="bt">今日综述 <span class="tag">由评分规则自动生成 · 供参考，不构成承保指令</span></div>
@@ -139,7 +147,7 @@
   </div>
   <div id="err" class="err" style="display:none"></div>
 
-  <h2>今日数据源链路 <span class="hint">官方数据源=权威机构结构化数据 · 媒体报道源=公开媒体监测信号 · 历史基准档=无证据时按历史画像</span></h2>
+  <h2>今日数据源链路 <span class="hint">官方数据源=权威机构结构化数据 · 媒体报道源=公开媒体监测 · 历史基准档=无证据时按历史画像</span></h2>
   <div id="sources" class="grid"></div>
 
   <h2>今日走廊评分 <span class="hint">8 条权威走廊 × 5 项信息参数</span></h2>
@@ -155,13 +163,13 @@
 
   <h2>近 30 天运行历史 <span class="hint">由每日快照 evidence 派生 · 点击日期行展开当天 8×5 评分</span></h2>
   <div class="panel scroll"><table id="hist"></table></div>
-  <p class="note">每日一行记录各因子的数据链路档位与态势建议峰值；日期寻址快照一经写出不可变，历史可靠可回溯。</p>
+  <p class="note">日期寻址快照一经写出不可变，历史可靠可回溯；原始 JSON 存于仓库 snapshots/ 目录（git 提交历史 = 审计链）。</p>
 
-  <h2>数据来源公示 <span class="hint">审计留痕 · 点击展开可查看原文链接</span></h2>
+  <h2>数据来源公示 <span class="hint">审计留痕 · 点击展开</span></h2>
   <div id="evidence"></div>
 
   <footer>
-    披露：媒体沉默≠安全——无证据走廊按基准档处理，不解读为安全；ct05/ct06"关闭"级须≥2 独立新闻域名佐证；
+    披露：媒体沉默≠安全——无证据走廊按历史基准档处理，不解读为安全；ct05/ct06"关闭"级须≥2 独立信源佐证；
     媒体滞后性意味着评级变化可能滞后于实况。每次发布即一次 git 提交（谁=bot / 何时=提交时间 / 证据=本页与 audit/*.md）。
     <br>SEIKCHA · 中央财经大学 保险学院 — 本页由 GitHub Actions 每日自动生成更新。
   </footer>
@@ -199,25 +207,27 @@
     if (!r.ok) throw new Error("status.json HTTP " + r.status);
     return r.json();
   }).then(function (st) {
-    document.getElementById("hero-date").textContent = st.date;
-    document.getElementById("hero-time").textContent =
-      "生成于 " + st.generated_at.replace("T", " ").slice(0, 16) + "（UTC+8） · 管线 v" + st.pipeline_version;
+    document.getElementById("top-date").textContent = st.date;
+    document.getElementById("hero-meta").innerHTML =
+      '<span>生成于 <b>' + esc(st.generated_at.replace("T", " ").slice(0, 16)) + '</b>（UTC+8）</span>' +
+      '<span>管线 <b>v' + esc(st.pipeline_version) + '</b></span>' +
+      '<span>每日更新 <b>08:40（北京时间）</b></span>';
 
-    // ---- KPI 概览 ----
+    // ---- KPI：数据覆盖（官方+媒体=覆盖；基准=历史画像兜底） ----
     var grades = SOURCES.map(function (f) { return (st.sources[f] || {}).grade; });
     var real = grades.filter(function (g) { return g === "real"; }).length;
-    var degr = grades.filter(function (g) { return g === "degraded"; }).length;
-    var down = 5 - real - degr;
+    var media = grades.filter(function (g) { return g === "degraded"; }).length;
+    var base = 5 - real - media;
     var kH = document.getElementById("kpi-health");
-    kH.className = "kpi " + (down === 0 ? "ok" : down <= 1 ? "mid" : "bad");
-    kH.querySelector(".val").textContent = (real + degr) + "/5 覆盖";
-    kH.querySelector(".sub").textContent = "官方 " + real + " · 媒体 " + degr + " · 基准 " + down;
+    kH.className = "kpi " + (base === 0 ? "ok" : base <= 1 ? "mid" : "bad");
+    kH.querySelector(".val").textContent = (real + media) + "/5";
+    kH.querySelector(".sub").textContent = "官方 " + real + " · 媒体 " + media + " · 基准 " + base;
 
     var nW = st.run.warnings.length;
     var kW = document.getElementById("kpi-warn");
     kW.className = "kpi " + (nW === 0 ? "ok" : nW <= 2 ? "mid" : "bad");
     kW.querySelector(".val").textContent = nW + " 条";
-    kW.querySelector(".sub").textContent = nW === 0 ? "全链路无告警" : "详见下方证据区";
+    kW.querySelector(".sub").textContent = nW === 0 ? "全链路无告警" : "详见数据来源公示";
 
     var order = { S0: 0, S1: 1, S2: 2, S3: 3 };
     var best = "S0";
@@ -231,49 +241,38 @@
 
     var kR = document.getElementById("kpi-run");
     kR.querySelector(".val").textContent = st.run.duration_s + " s";
-    kR.querySelector(".sub").textContent = "抓取+评分+校验+发布";
 
-    // ---- 今日综述（评分规则自动生成，纯前端拼装，不引入主观判断） ----
-    var cor = st.corridors || {};
-    function pick(fn) { return CIDS.filter(function (c) { return fn((cor[c] || {})); }); }
-    var parts = [];
-    var rainBad = pick(function (c) { return c.fr15 === "暴雨" || c.fr15 === "极端"; });
-    parts.push(rainBad.length
-      ? "沿线天气：" + rainBad.map(function (c) { return c + " 走廊"; }).join("、") +
-        "降雨达「" + cor[rainBad[0]].fr15 + "」档，在途水渍风险升高"
-      : "沿线天气平稳：各走廊未来 72h 降雨均处「平/好」档");
-    var fr03hi = pick(function (c) { return c.fr03 === "中" || c.fr03 === "高" || c.fr03 === "极高"; });
-    parts.push(fr03hi.length
-      ? "治安热度：" + fr03hi.map(function (c) { return c + " 走廊"; }).join("、") +
-        "事件计数偏高（档「" + cor[fr03hi[0]].fr03 + "」），已按官方月度表反映进费率"
-      : "治安热度：各走廊均处「低」档，未现异常聚集");
-    var nodeBad = pick(function (c) { return c.ct05 === "收紧" || c.ct05 === "关闭"; });
-    var portBad = pick(function (c) { return c.ct06 === "拥堵" || c.ct06 === "关闭"; });
-    if (nodeBad.length || portBad.length) {
-      parts.push("媒体监测：发现异常报道" + (nodeBad.length ? "（节点：" + nodeBad.join("、") + "）" : "") +
-        (portBad.length ? "（口岸：" + portBad.join("、") + "）" : "") + "，相关走廊已上调档位");
-    } else {
-      parts.push("媒体监测：未发现节点受损或口岸关闭的公开报道（无报道不解读为安全，相关因子按历史基准档处理）");
-    }
-    var ct04hi = pick(function (c) { return c.ct04 >= 2; });
-    if (ct04hi.length) {
-      parts.push("冲突波动：" + ct04hi.map(function (c) { return c + " 走廊"; }).join("、") +
-        "媒体报道强度较 90 日基线明显抬升，建议发车前复核路线");
-    }
-    parts.push(best === "S1" ? "整体态势建议 S1，无需承保区域转移"
-      : best === "S2" ? "整体态势建议 S2，建议对相关走廊启动人工复核"
-      : "整体态势建议 " + best + "，须立即启动人工定级与承保区域转移评估");
-    document.getElementById("brief-text").textContent = parts.join("。") + "。";
-    document.getElementById("brief").style.display = "";
+    // ---- 今日综述（规则生成） ----
+    try {
+      var cor = st.corridors || {};
+      var s = [];
+      var rainBad = CIDS.filter(function (c) { var v = (cor[c] || {}).fr15; return v === "暴雨" || v === "极端"; });
+      s.push(rainBad.length
+        ? "沿线天气异常：" + rainBad.map(function (c) { return c + " 走廊"; }).join("、") + "降雨达「" + cor[rainBad[0]].fr15 + "」档，注意在途水渍风险。"
+        : "沿线天气平稳，各走廊未来 72h 降雨均为「平/好」档。");
+      var fr03hi = CIDS.filter(function (c) { var v = (cor[c] || {}).fr03; return v === "中" || v === "高" || v === "极高"; });
+      s.push(fr03hi.length
+        ? "治安热度：官方月度表评估下，" + fr03hi.map(function (c) { return c + " 走廊"; }).join("、") + "事件计数偏高（档位「" + cor[fr03hi[0]].fr03 + "」），其余走廊处「低」档。"
+        : "治安热度：官方月度表评估下，各走廊均处「低」档。");
+      var nodeBad = CIDS.filter(function (c) { var v = (cor[c] || {}).ct05; return v === "收紧" || v === "关闭"; });
+      var portBad = CIDS.filter(function (c) { var v = (cor[c] || {}).ct06; return v === "拥堵" || v === "关闭"; });
+      s.push((nodeBad.length || portBad.length)
+        ? "媒体监测到异常信号" + (nodeBad.length ? "（节点：" + nodeBad.join("、") + "）" : "") + (portBad.length ? "（口岸：" + portBad.join("、") + "）" : "") + "。"
+        : "媒体监测未发现节点受损或口岸关闭的公开报道（无报道不解读为安全，相关因子按历史基准档处理）。");
+      s.push(best === "S1" ? "整体态势建议 " + best + "，各走廊维持常规承保。"
+        : "整体态势建议 " + best + "，建议启动人工复核并评估承保区域转移（须人工批准）。");
+      document.getElementById("brief-text").textContent = s.join("");
+      document.getElementById("brief").style.display = "";
+    } catch (e) { /* 综述生成失败不影响主数据展示 */ }
 
     // ---- 数据源卡片 ----
     document.getElementById("sources").innerHTML = SOURCES.map(function (f) {
-      var s = st.sources[f] || {};
+      var s2 = st.sources[f] || {};
       return '<div class="card"><div class="top"><span class="name">' + esc(FACTOR_NAMES[f]) +
-        ' <span class="code">' + f + '</span></span>' +
-        '<span class="pill ' + esc(s.grade) + '">' + esc(GRADE_PILL[s.grade] || s.grade) + '</span></div>' +
-        '<div class="label">' + esc(s.label) + '</div>' +
-        '<div class="detail">' + esc(s.detail) + '</div></div>';
+        '<span class="code">' + f + '</span></span>' +
+        '<span class="pill ' + esc(s2.grade) + '">' + esc(GRADE_PILL[s2.grade] || s2.grade) + '</span></div>' +
+        '<div class="label">' + esc(s2.label) + '</div>' +
+        '<div class="detail">' + esc(s2.detail) + '</div></div>';
     }).join("");
 
     // ---- 走廊评分表 ----
@@ -292,13 +291,13 @@
     document.getElementById("st").innerHTML =
       "<thead><tr><th>走廊</th><th>建议档</th><th>依据（ct04 / ct05 / ct06）</th></tr></thead><tbody>" +
       CIDS.map(function (cid) {
-        var s = (st.st_suggestion || {})[cid] || {};
+        var s3 = (st.st_suggestion || {})[cid] || {};
         return "<tr><td><b>" + cid + "</b> " + esc(CID_NAMES[cid]) + "</td>" +
-          '<td><span class="badge ' + badge(s.suggestion) + '">' + esc(s.suggestion || "—") + "</span></td>" +
-          "<td>" + esc(s.basis || "—") + "</td></tr>";
+          '<td><span class="badge ' + badge(s3.suggestion) + '">' + esc(s3.suggestion || "—") + "</span></td>" +
+          "<td>" + esc(s3.basis || "—") + "</td></tr>";
       }).join("") + "</tbody>";
 
-    // ---- 证据 ----
+    // ---- 数据来源公示 ----
     var ev = st.evidence || {};
     var html = "";
     if (nW) {
@@ -311,7 +310,7 @@
       return "<details><summary>" + esc(FACTOR_NAMES[f]) + "（" + list.length + " 条）</summary><ul>" +
         list.map(function (e) {
           return "<li>[" + esc(e.source) + "] " + esc(e.note) +
-            (e.url ? ' — <a href="' + esc(e.url) + '" target="_blank" rel="noopener">证据链接</a>' : "") + "</li>";
+            (e.url ? ' — <a href="' + esc(e.url) + '" target="_blank" rel="noopener">来源链接</a>' : "") + "</li>";
         }).join("") + "</ul></details>";
     }).join("");
     document.getElementById("evidence").innerHTML = html || '<p class="note">今日无证据条目。</p>';
@@ -325,15 +324,17 @@
   }).then(function (h) {
     var days = (h && h.days) || [];
     if (!days.length) throw new Error("empty");
-    var GRADE_DOT = { openmeteo: "real", "acled-oauth": "real", "acled-cache": "degraded",
-                      "gdelt-proxy": "degraded", "gdelt-news": "degraded", baseline: "fallback", mock: "fallback" };
+    var GRADE_DOT = { openmeteo: "real", "hdx-real": "real", "acled-oauth": "real", "acled-cache": "degraded",
+                      "gdelt-proxy": "degraded", "gdelt-news": "degraded", "gnews-rss": "degraded",
+                      baseline: "fallback", mock: "fallback" };
+    var DOT_COLOR = { real: "var(--green)", degraded: "var(--orange)", fallback: "#a8a29e" };
     function dot(m) {
       var g = GRADE_DOT[m] || "fallback";
-      return '<span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;' +
-        'margin-right:7px;background:' + (g === "real" ? "#1e7a4f" : g === "degraded" ? "#e8760d" : "#a8a29e") + '"></span>';
+      return '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;background:' +
+        DOT_COLOR[g] + '"></span>';
     }
     function miniTable(levels) {
-      return '<table style="margin:6px 0 10px;font-size:12px"><thead><tr>' +
+      return '<table style="margin:6px 0 10px;font-size:12.5px"><thead><tr>' +
         "<th style='padding:5px 9px'>走廊</th><th style='padding:5px 9px'>名称</th>" +
         SOURCES.map(function (f) {
           return "<th style='padding:5px 9px'>" + esc(FACTOR_NAMES[f]) + "</th>";
@@ -352,17 +353,17 @@
       "<thead><tr><th>日期</th>" + SOURCES.map(function (f) {
         return "<th>" + esc(FACTOR_NAMES[f]) + "</th>";
       }).join("") + "<th>态势峰值</th></tr></thead><tbody>" + days.slice().reverse().map(function (d, i) {
-        var s = d.sources || {};
+        var s4 = d.sources || {};
         return '<tr class="hrow" data-i="' + i + '" style="cursor:pointer" title="点击展开/收起当天评分">' +
           "<td>" + esc(d.date) + "</td>" + SOURCES.map(function (f) {
-            var m = s[f] || "baseline";
+            var m = s4[f] || "baseline";
             return "<td>" + dot(m) + esc(m) + "</td>";
           }).join("") + '<td><span class="badge ' + badge(d.st_max) + '">' + esc(d.st_max || "—") + "</span></td></tr>" +
           '<tr class="hdetail" data-i="' + i + '" style="display:none"><td colspan="' + (SOURCES.length + 2) +
-          '" style="background:#f8fafc">' + miniTable(d.levels) + "</td></tr>";
+          '" style="background:var(--tint)">' + miniTable(d.levels) + "</td></tr>";
       }).join("") + "</tbody>";
-    ht.addEventListener("click", function (ev) {
-      var row = ev.target.closest ? ev.target.closest("tr.hrow") : null;
+    ht.addEventListener("click", function (ev2) {
+      var row = ev2.target.closest ? ev2.target.closest("tr.hrow") : null;
       if (!row) return;
       var det = ht.querySelector('tr.hdetail[data-i="' + row.getAttribute("data-i") + '"]');
       if (det) det.style.display = det.style.display === "none" ? "" : "none";

@@ -90,7 +90,6 @@ def build_snapshot(day: date, mock_acled: bool) -> tuple[dict, list[str], dict]:
         # 降级 → ③ GDELT：ct04 用媒体覆盖比值（真实）
         evidence["fr03"] = list(sec_ev)
         evidence["ct04"] = []
-        warnings.append("ACLED 不可用 → ct04 使用 GDELT 媒体覆盖代理（真实数据）")
         gap = float(os.environ.get("GDELT_GAP", "10"))
         ct04_real = 0
         for i, cid in enumerate(CORRIDOR_IDS):
