@@ -140,7 +140,7 @@
     本表仅为管道每日建议档，<b>不自动生效、不修改 segments.json</b>。</span>
   </div>
 
-  <h2>近 30 天运行历史 <span class="hint">由每日快照 evidence 派生</span></h2>
+  <h2>近 30 天运行历史 <span class="hint">由每日快照 evidence 派生 · 点击日期行展开当天 8×5 评分</span></h2>
   <div class="panel scroll"><table id="hist"></table></div>
   <p class="note">每日一行记录各因子的数据链路档位与态势建议峰值；日期寻址快照一经写出不可变，历史可靠可回溯。</p>
 
@@ -281,18 +281,46 @@
     if (!days.length) throw new Error("empty");
     var GRADE_DOT = { openmeteo: "real", "acled-oauth": "real", "acled-cache": "degraded",
                       "gdelt-proxy": "degraded", "gdelt-news": "degraded", baseline: "fallback", mock: "fallback" };
-    document.getElementById("hist").innerHTML =
+    function dot(m) {
+      var g = GRADE_DOT[m] || "fallback";
+      return '<span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;' +
+        'margin-right:7px;background:var(--' + (g === "real" ? "green" : g === "degraded" ? "amber" : "red") + ')"></span>';
+    }
+    function miniTable(levels) {
+      return '<table style="margin:6px 0 10px;font-size:12px"><thead><tr>' +
+        "<th style='padding:5px 9px'>走廊</th><th style='padding:5px 9px'>名称</th>" +
+        SOURCES.map(function (f) {
+          return "<th style='padding:5px 9px'>" + esc(FACTOR_NAMES[f]) + "</th>";
+        }).join("") + "</tr></thead><tbody>" + CIDS.map(function (cid) {
+          var c = (levels || {})[cid] || {};
+          return "<tr><td style='padding:5px 9px'><b>" + cid + "</b></td>" +
+            "<td style='padding:5px 9px'>" + esc(CID_NAMES[cid]) + "</td>" +
+            SOURCES.map(function (f) {
+              return '<td style="padding:5px 9px"><span class="badge ' + badge(c[f]) + '">' +
+                esc(c[f] == null ? "—" : c[f]) + "</span></td>";
+            }).join("") + "</tr>";
+        }).join("") + "</tbody></table>";
+    }
+    var ht = document.getElementById("hist");
+    ht.innerHTML =
       "<thead><tr><th>日期</th>" + SOURCES.map(function (f) {
         return "<th>" + esc(FACTOR_NAMES[f]) + "</th>";
-      }).join("") + "<th>态势峰值</th></tr></thead><tbody>" + days.slice().reverse().map(function (d) {
+      }).join("") + "<th>态势峰值</th></tr></thead><tbody>" + days.slice().reverse().map(function (d, i) {
         var s = d.sources || {};
-        return "<tr><td>" + esc(d.date) + "</td>" + SOURCES.map(function (f) {
-          var m = s[f] || "baseline";
-          return '<td><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;' +
-            'margin-right:7px;background:var(--' + (GRADE_DOT[m] === "real" ? "green" :
-            GRADE_DOT[m] === "degraded" ? "amber" : "red") + ')"></span>' + esc(m) + "</td>";
-        }).join("") + '<td><span class="badge ' + badge(d.st_max) + '">' + esc(d.st_max || "—") + "</span></td></tr>";
+        return '<tr class="hrow" data-i="' + i + '" style="cursor:pointer" title="点击展开/收起当天评分">' +
+          "<td>" + esc(d.date) + "</td>" + SOURCES.map(function (f) {
+            var m = s[f] || "baseline";
+            return "<td>" + dot(m) + esc(m) + "</td>";
+          }).join("") + '<td><span class="badge ' + badge(d.st_max) + '">' + esc(d.st_max || "—") + "</span></td></tr>" +
+          '<tr class="hdetail" data-i="' + i + '" style="display:none"><td colspan="' + (SOURCES.length + 2) +
+          '" style="background:#f8fafc">' + miniTable(d.levels) + "</td></tr>";
       }).join("") + "</tbody>";
+    ht.addEventListener("click", function (ev) {
+      var row = ev.target.closest ? ev.target.closest("tr.hrow") : null;
+      if (!row) return;
+      var det = ht.querySelector('tr.hdetail[data-i="' + row.getAttribute("data-i") + '"]');
+      if (det) det.style.display = det.style.display === "none" ? "" : "none";
+    });
   }).catch(function () {
     document.getElementById("hist").innerHTML = "<tbody><tr><td>暂无历史（随每日运行累积）</td></tr></tbody>";
   });
