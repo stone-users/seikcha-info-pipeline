@@ -59,14 +59,31 @@ class TestDeriveModes(unittest.TestCase):
         m = derive_modes(_snap({"fr15": [_ev("Open-Meteo", "抓取失败，本日该走廊按基准档: timeout")]}))
         self.assertEqual(m["fr15"], "baseline")
 
+    def test_hdx_real_source(self):
+        m = derive_modes(_snap({
+            "fr15": [_ev("Open-Meteo", "未来72h沿线最不利点 仰光 累积降雨 0.0mm → 平")],
+            "fr03": [_ev("ACLED 公开月度表（联合国HDX分发）", "2026-09 完整月聚合")],
+            "ct04": [_ev("GDELT", "走廊B 媒体覆盖比 1.2 → 1")],
+        }))
+        self.assertEqual(m["fr03"], "hdx-real")
+        self.assertEqual(m["ct04"], "gdelt-proxy")
+
     def test_news_all_failed_is_baseline(self):
         m = derive_modes(_snap({
-            "ct05": [_ev("GDELT", f"走廊{c} 基础设施新闻抓取失败 → ct05 落基准档 '常规'")
+            "ct05": [_ev("GDELT+RSS", f"走廊{c} 基础设施新闻双源（GDELT/RSS）均抓取失败 → ct05 落基准档 '常规'")
                      for c in "ABCDEFGH"],
-            "ct06": [_ev("GDELT", "口岸新闻抓取失败（限流/网络）→ ct06 全口岸落基准档 '正常'")],
+            "ct06": [_ev("GDELT+RSS", "口岸新闻双源（GDELT/RSS）均抓取失败 → ct06 全口岸落基准档 '正常'")],
         }))
         self.assertEqual(m["ct05"], "baseline")
         self.assertEqual(m["ct06"], "baseline")
+
+    def test_news_rss_backup_detected(self):
+        m = derive_modes(_snap({
+            "ct05": [_ev("Google News RSS", "走廊A 72h：毁阻信源0 遇袭信源0 → 常规。无报道")],
+            "ct06": [_ev("Google News RSS", "口岸木姐 72h：关停信源0 拥堵信源0 重开信源0 → 正常。无报道")],
+        }))
+        self.assertEqual(m["ct05"], "gnews-rss")
+        self.assertEqual(m["ct06"], "gnews-rss")
 
     def test_news_partial_failure_still_gdelt(self):
         evs = [_ev("GDELT", f"走廊{c} 72h：毁阻域名0 遇袭域名0 → 常规。无报道") for c in "ABCDEFG"]

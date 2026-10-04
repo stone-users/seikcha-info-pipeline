@@ -27,10 +27,7 @@ jobs:
       - name: 评分卡单元测试（不绿不发布）
         run: python -m unittest discover -s tests -v
 
-      - name: 生成当日快照（ACLED 凭证来自 Secrets；Cloudflare 拦截/未配置时自动降级 GDELT）
-        env:
-          ACLED_EMAIL: ${{ secrets.ACLED_EMAIL }}
-          ACLED_PASSWORD: ${{ secrets.ACLED_PASSWORD }}
+      - name: 生成当日快照（全链路免账号：Open-Meteo + GDELT/RSS + ACLED 公开月度表）
         run: python pipeline/build_snapshot.py
 
       - name: 提交快照、状态页与审计（无变化则跳过提交）

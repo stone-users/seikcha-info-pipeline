@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corridors import CORRIDOR_CITIES, CORRIDOR_IDS, CORRIDOR_NAMES  # noqa: E402
 from fetch_acled import fetch_security  # noqa: E402
 from fetch_gdelt import corridor_ct04  # noqa: E402
+from fetch_hdx import fetch_fr03_monthly, score_fr03_from_counts  # noqa: E402
 from fetch_news import fetch_nodes_and_ports, st_suggestion_level  # noqa: E402
 from fetch_openmeteo import corridor_fr15  # noqa: E402
 from score import BASELINE, score_ct04, score_fr03  # noqa: E402
@@ -86,10 +87,10 @@ def build_snapshot(day: date, mock_acled: bool) -> tuple[dict, list[str], dict]:
                 r = (armed7 / base_daily) if base_daily > 0 else (0.0 if armed7 == 0 else 99.0)
                 corridors[cid]["ct04"] = score_ct04(r)
     else:
-        # 降级 → GDELT：ct04 用媒体覆盖比值（真实），fr03 按段基准
+        # 降级 → ③ GDELT：ct04 用媒体覆盖比值（真实）
         evidence["fr03"] = list(sec_ev)
         evidence["ct04"] = []
-        warnings.append("ACLED 不可用 → ct04 使用 GDELT 媒体覆盖代理（真实数据），fr03 按段基准")
+        warnings.append("ACLED 不可用 → ct04 使用 GDELT 媒体覆盖代理（真实数据）")
         gap = float(os.environ.get("GDELT_GAP", "10"))
         ct04_real = 0
         for i, cid in enumerate(CORRIDOR_IDS):
@@ -103,29 +104,44 @@ def build_snapshot(day: date, mock_acled: bool) -> tuple[dict, list[str], dict]:
             else:
                 corridors[cid]["ct04"] = level
                 ct04_real += 1
-        fr03_entry = source_entry("baseline", False,
-                                  "ACLED 不可用且 fr03 无可比代理 → 段基准")
         ct04_entry = source_entry(
             "gdelt-proxy", ct04_real > 0,
             f"GDELT 媒体覆盖代理（{ct04_real}/8 走廊真实评分）"
             if ct04_real > 0 else "GDELT 代理亦不可用 → 基准档")
 
-    # ---- CT05 / CT06（二期·GDELT 新闻源+关键词规则初判；"关闭"须≥2独立域名佐证才触发禁售） ----
-    ct05_map, ct06_map, ev5, ev6 = fetch_nodes_and_ports(gap=float(os.environ.get("GDELT_GAP", "10")))
+        # ④ fr03：ACLED 官方公开月度表（联合国 HDX 分发，免账号免 key，滞后约1个月）
+        try:
+            counts, hdx_ev, month_desc = fetch_fr03_monthly(
+                Path(__file__).resolve().parent.parent / "cache")
+            levels = score_fr03_from_counts(counts)
+            for cid in CORRIDOR_IDS:
+                corridors[cid]["fr03"] = levels[cid]
+            evidence["fr03"].extend(hdx_ev)
+            fr03_entry = source_entry(
+                "hdx-real", True,
+                f"ACLED 公开月度表（HDX 分发）：{month_desc} 完整月 admin1 聚合，滞后约1个月")
+        except Exception as e:
+            warnings.append(f"HDX 月度表不可用 → fr03 按段基准: {e}")
+            fr03_entry = source_entry("baseline", False, "HDX 月度表不可用 → 段基准")
+
+    # ---- CT05 / CT06（GDELT 主源 + Google News RSS 备源；"关闭"须≥2独立信源佐证才触发禁售） ----
+    ct05_map, ct06_map, ev5, ev6, mode5, mode6 = fetch_nodes_and_ports(
+        gap=float(os.environ.get("GDELT_GAP", "10")))
     evidence["ct05"] = ev5
     evidence["ct06"] = ev6
     for cid in CORRIDOR_IDS:
         corridors[cid]["ct05"] = ct05_map.get(cid, BASELINE["ct05"])
         corridors[cid]["ct06"] = ct06_map.get(cid, BASELINE["ct06"])
-    fail5 = sum(1 for e in ev5 if "抓取失败" in e.get("note", ""))
-    fail6 = sum(1 for e in ev6 if "抓取失败" in e.get("note", ""))
     ct05_entry = source_entry(
-        "gdelt-news" if fail5 < len(CORRIDOR_IDS) else "baseline", fail5 < len(CORRIDOR_IDS),
-        f"GDELT 新闻检索 {len(CORRIDOR_IDS) - fail5}/{len(CORRIDOR_IDS)} 走廊成功"
-        if fail5 < len(CORRIDOR_IDS) else "全部走廊查询失败 → 基准档")
+        mode5, mode5 != "baseline",
+        {"gdelt-news": "GDELT 新闻检索（全走廊合并单查）",
+         "gnews-rss": "Google News RSS 备源（GDELT 限流时兜底）",
+         "baseline": "双源（GDELT/RSS）均失败 → 基准档"}[mode5])
     ct06_entry = source_entry(
-        "gdelt-news" if fail6 == 0 else "baseline", fail6 == 0,
-        "全口岸单查询成功" if fail6 == 0 else "口岸新闻查询失败 → 基准档")
+        mode6, mode6 != "baseline",
+        {"gdelt-news": "GDELT 新闻检索（全口岸单查）",
+         "gnews-rss": "Google News RSS 备源（GDELT 限流时兜底）",
+         "baseline": "双源（GDELT/RSS）均失败 → 基准档"}[mode6])
 
     # ---- ST-01 每日建议（advisory：转移须人工批准+留痕，本管道不改 segments.json） ----
     st_sugg = {}

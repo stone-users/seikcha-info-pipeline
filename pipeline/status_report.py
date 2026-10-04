@@ -16,17 +16,19 @@ SOURCES = ("fr15", "fr03", "ct04", "ct05", "ct06")
 
 MODE_LABELS = {
     "openmeteo": "Open-Meteo 实时",
+    "hdx-real": "ACLED 公开月度表（HDX）",
     "acled-oauth": "ACLED 官方（OAuth）",
     "acled-cache": "ACLED（浏览器缓存）",
     "mock": "MOCK 联调数据",
     "gdelt-proxy": "GDELT 媒体代理",
     "gdelt-news": "GDELT 新闻检索",
+    "gnews-rss": "Google News RSS 备源",
     "baseline": "基准档兜底",
 }
 
 # 状态页配色档：real=真实数据(绿) / degraded=降级链仍真实(琥珀) / fallback=兜底或联调(红)
-_REAL = ("openmeteo", "acled-oauth")
-_DEGRADED = ("acled-cache", "gdelt-proxy", "gdelt-news")
+_REAL = ("openmeteo", "acled-oauth", "hdx-real")
+_DEGRADED = ("acled-cache", "gdelt-proxy", "gdelt-news", "gnews-rss")
 
 
 def mode_grade(mode: str) -> str:
@@ -57,19 +59,21 @@ def derive_modes(snap: dict) -> dict[str, str]:
                      if any(e.get("note", "").startswith("未来72h") for e in fr15)
                      else "baseline")
 
-    sec = " ".join(e.get("source", "") for e in (ev.get("fr03") or []))
-    if "OAuth" in sec:
+    fr03 = " ".join(e.get("source", "") for e in (ev.get("fr03") or []))
+    if "HDX" in fr03:
+        fr03m = "hdx-real"
+    elif "OAuth" in fr03:
         fr03m = "acled-oauth"
-    elif "缓存" in sec:
+    elif "缓存" in fr03:
         fr03m = "acled-cache"
-    elif "mock" in sec.lower():
+    elif "mock" in fr03.lower():
         fr03m = "mock"
     else:
         fr03m = "baseline"
     modes["fr03"] = fr03m
 
     ct04 = ev.get("ct04") or []
-    if fr03m != "baseline":
+    if fr03m in ("acled-oauth", "acled-cache", "mock"):
         modes["ct04"] = fr03m
     elif any("GDELT" in e.get("source", "") for e in ct04):
         modes["ct04"] = "gdelt-proxy"
@@ -78,8 +82,8 @@ def derive_modes(snap: dict) -> dict[str, str]:
 
     for f in ("ct05", "ct06"):
         es = ev.get(f) or []
-        modes[f] = ("gdelt-news"
-                    if any("抓取失败" not in e.get("note", "") for e in es)
+        modes[f] = ("gdelt-news" if any(e.get("source") == "GDELT" for e in es)
+                    else "gnews-rss" if any(e.get("source") == "Google News RSS" for e in es)
                     else "baseline")
     return modes
 

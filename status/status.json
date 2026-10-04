@@ -1,11 +1,11 @@
 {
   "date": "2026-10-04",
-  "generated_at": "2026-10-04T12:13:47+08:00",
+  "generated_at": "2026-10-04T14:38:11+08:00",
   "pipeline_version": "1.0",
   "run": {
-    "duration_s": 1921.6,
+    "duration_s": 939.9,
     "warnings": [
-      "ACLED 不可用 → ct04 使用 GDELT 媒体覆盖代理（真实数据），fr03 按段基准"
+      "ACLED 不可用 → ct04 使用 GDELT 媒体覆盖代理（真实数据）"
     ]
   },
   "sources": {
@@ -17,87 +17,87 @@
       "detail": "Open-Meteo 72h降雨 8/8 走廊实时评分"
     },
     "fr03": {
-      "mode": "baseline",
-      "ok": false,
-      "grade": "fallback",
-      "label": "基准档兜底",
-      "detail": "ACLED 不可用且 fr03 无可比代理 → 段基准"
+      "mode": "hdx-real",
+      "ok": true,
+      "grade": "real",
+      "label": "ACLED 公开月度表（HDX）",
+      "detail": "ACLED 公开月度表（HDX 分发）：2026-09 完整月 admin1 聚合，滞后约1个月"
     },
     "ct04": {
       "mode": "gdelt-proxy",
       "ok": true,
       "grade": "degraded",
       "label": "GDELT 媒体代理",
-      "detail": "GDELT 媒体覆盖代理（2/8 走廊真实评分）"
+      "detail": "GDELT 媒体覆盖代理（3/8 走廊真实评分）"
     },
     "ct05": {
-      "mode": "baseline",
-      "ok": false,
-      "grade": "fallback",
-      "label": "基准档兜底",
-      "detail": "全部走廊查询失败 → 基准档"
+      "mode": "gnews-rss",
+      "ok": true,
+      "grade": "degraded",
+      "label": "Google News RSS 备源",
+      "detail": "Google News RSS 备源（GDELT 限流时兜底）"
     },
     "ct06": {
-      "mode": "baseline",
-      "ok": false,
-      "grade": "fallback",
-      "label": "基准档兜底",
-      "detail": "口岸新闻查询失败 → 基准档"
+      "mode": "gnews-rss",
+      "ok": true,
+      "grade": "degraded",
+      "label": "Google News RSS 备源",
+      "detail": "Google News RSS 备源（GDELT 限流时兜底）"
     }
   },
   "corridors": {
     "A": {
       "fr15": "平",
-      "fr03": "段基准",
-      "ct04": 1,
+      "fr03": "低",
+      "ct04": 3,
       "ct05": "常规",
       "ct06": "正常"
     },
     "B": {
       "fr15": "平",
-      "fr03": "段基准",
+      "fr03": "低",
       "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "C": {
       "fr15": "平",
-      "fr03": "段基准",
+      "fr03": "低",
       "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "D": {
       "fr15": "平",
-      "fr03": "段基准",
+      "fr03": "中",
       "ct04": 0,
       "ct05": "常规",
       "ct06": "正常"
     },
     "E": {
       "fr15": "平",
-      "fr03": "段基准",
+      "fr03": "低",
       "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "F": {
       "fr15": "平",
-      "fr03": "段基准",
+      "fr03": "低",
       "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "G": {
       "fr15": "平",
-      "fr03": "段基准",
+      "fr03": "低",
       "ct04": 1,
       "ct05": "常规",
       "ct06": "正常"
     },
     "H": {
       "fr15": "平",
-      "fr03": "段基准",
+      "fr03": "低",
       "ct04": 0,
       "ct05": "常规",
       "ct06": "正常"
@@ -105,8 +105,8 @@
   },
   "st_suggestion": {
     "A": {
-      "suggestion": "S1",
-      "basis": "ct04=1, ct05=常规, ct06=正常"
+      "suggestion": "S2",
+      "basis": "ct04=3, ct05=常规, ct06=正常"
     },
     "B": {
       "suggestion": "S1",
@@ -142,56 +142,61 @@
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=17.34,16.89,16.53,17.28,16.72,16.92,16.63,16.87&longitude=96.48,97.63,98.79,97.03,98.51,97.37,96.28,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 仰光 累积降雨 32.0mm → 平（沿线8城取最大）"
+        "note": "未来72h沿线最不利点 仰光 累积降雨 32.2mm → 平（沿线8城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=17.34,21.98,20.88,19.76,16.87&longitude=96.48,96.08,95.86,96.08,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 仰光 累积降雨 32.0mm → 平（沿线5城取最大）"
+        "note": "未来72h沿线最不利点 仰光 累积降雨 32.2mm → 平（沿线5城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=23.05,22.6,22.94,21.98,23.99&longitude=98.1,97.03,97.75,96.08,97.75&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 腊戌 累积降雨 16.4mm → 平（沿线5城取最大）"
+        "note": "未来72h沿线最不利点 腊戌 累积降雨 16.3mm → 平（沿线5城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=24.05,24.14,21.98,25.38,22.57,22.85&longitude=96.05,96.35,96.08,97.4,95.99,95.62&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 卡塔 累积降雨 20.5mm → 平（沿线6城取最大）"
+        "note": "未来72h沿线最不利点 卡塔 累积降雨 20.3mm → 平（沿线6城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=16.85,16.78,16.87&longitude=95.35,94.73,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 仰光 累积降雨 32.0mm → 平（沿线3城取最大）"
+        "note": "未来72h沿线最不利点 仰光 累积降雨 32.2mm → 平（沿线3城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=14.09,16.48,12.44,16.87&longitude=98.2,97.63,98.6,96.2&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 仰光 累积降雨 32.0mm → 平（沿线4城取最大）"
+        "note": "未来72h沿线最不利点 仰光 累积降雨 32.2mm → 平（沿线4城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=18.95,19.42,20.28&longitude=94.3,93.53,94.93&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 马圭 累积降雨 12.0mm → 平（沿线3城取最大）"
+        "note": "未来72h沿线最不利点 马圭 累积降雨 12.2mm → 平（沿线3城取最大）"
       },
       {
         "source": "Open-Meteo",
         "url": "https://api.open-meteo.com/v1/forecast?latitude=24.26,24.32,25.38&longitude=96.94,97.42,97.4&hourly=precipitation&forecast_days=3&forecast_hours=72&timezone=Asia%2FYangon",
-        "note": "未来72h沿线最不利点 八莫 累积降雨 12.8mm → 平（沿线3城取最大）"
+        "note": "未来72h沿线最不利点 八莫 累积降雨 12.5mm → 平（沿线3城取最大）"
       }
     ],
     "fr03": [
       {
         "source": "ACLED",
-        "url": "https://acleddata.com/api/acled/read?_format=json",
-        "note": "OAuth 直连不可用已降级 GDELT：返回 0 事件（疑似账号数据封存 embargo）→ 不采信。ACLED 90日窗口事件 0 条，命中走廊 admin1 0 条"
+        "url": "https://acleddata.com/",
+        "note": "未配置 ACLED_EMAIL/ACLED_PASSWORD（且无浏览器缓存）→ GDELT 分支"
+      },
+      {
+        "source": "ACLED 公开月度表（联合国HDX分发）",
+        "url": "https://data.humdata.org/dataset/1dbe32d3-4432-4ff4-9192-dc310663428b/resource/5c167810-2450-425a-bcdc-1e1f769c2d62/download/myanmar_hrp_demonstration_events_by_month-year_as-of-02oct2026.xlsx",
+        "note": "2026-09 完整月非武装（示威/骚乱）事件：全国 admin1 合计 6 条，映射走廊后 A=0、B=0、C=0、D=6、E=0、F=0、G=0、H=1；来源 HDX 实时下载，月度粒度滞后约1个月（与 FR03 评分卡月化口径一致）"
       }
     ],
     "ct04": [
       {
         "source": "GDELT",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=timelinevol",
-        "note": "抓取失败（限流/网络），走廊A ct04 本日落基准档。query=(\"Myawaddy\" OR \"Kawkareik\" OR \"Hpa-an\" OR \"Thaton\" OR \"Kyaikto\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
+        "note": "走廊A 近7日覆盖和=0.0043 ÷ 基线折算7日=0.0008 → r=5.13 → ct04=3（媒体覆盖代理口径）。query=(\"Myawaddy\" OR \"Kawkareik\" OR \"Hpa-an\" OR \"Thaton\" OR \"Kyaikto\") (clash OR airstrike OR shelling OR ambush OR artillery OR offensive) sourcelang:eng"
       },
       {
         "source": "GDELT",
@@ -231,51 +236,71 @@
     ],
     "ct05": [
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊A 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊A 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       },
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊B 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊B 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       },
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊C 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊C 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       },
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊D 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊D 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       },
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊E 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊E 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       },
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊F 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊F 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       },
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊G 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊G 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       },
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "走廊H 基础设施新闻抓取失败 → ct05 落基准档 '常规'"
+        "note": "走廊H 72h：毁阻信源0 遇袭信源0 → 常规。无报道"
       }
     ],
     "ct06": [
       {
-        "source": "GDELT",
+        "source": "Google News RSS",
         "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
-        "note": "口岸新闻抓取失败（限流/网络）→ ct06 全口岸落基准档 '正常'"
+        "note": "口岸妙瓦底 72h：关停信源0 拥堵信源0 重开信源0 → 正常。无报道"
+      },
+      {
+        "source": "Google News RSS",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
+        "note": "口岸木姐 72h：关停信源0 拥堵信源0 重开信源0 → 正常。无报道"
+      },
+      {
+        "source": "Google News RSS",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
+        "note": "口岸雷基 72h：关停信源0 拥堵信源0 重开信源0 → 正常。无报道"
+      },
+      {
+        "source": "Google News RSS",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
+        "note": "口岸清水河-滚弄 72h：关停信源0 拥堵信源0 重开信源0 → 正常。无报道"
+      },
+      {
+        "source": "Google News RSS",
+        "url": "https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist",
+        "note": "口岸丹老/高当 72h：关停信源0 拥堵信源0 重开信源0 → 正常。无报道"
       }
     ]
   }
