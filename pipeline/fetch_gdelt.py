@@ -40,9 +40,9 @@ CORRIDOR_QUERY = {
 
 def _get_timeline(query: str) -> list[dict] | None:
     """timelinevol 序列（约90日×每日覆盖强度）；429/空响应退避重试，最终失败返回 None。
-    退避 5/10/20s：快速失败优于长挂（用户口径），全走廊最坏 ~3 分钟封顶。"""
+    退避 10/30/60s：429 多为分钟级窗口，等够时间大多自愈（实测 5/10/20 太短，限流期白试）。"""
     url = f"{API}?query={urllib.parse.quote(query)}&mode=timelinevol&timespan=3m&format=json"
-    delays = [5, 10, 20]
+    delays = [10, 30, 60]
     for attempt in range(4):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 seikcha-info-pipeline/1.0"})
@@ -50,7 +50,7 @@ def _get_timeline(query: str) -> list[dict] | None:
                 data = json.loads(r.read().decode("utf-8"))
             return data["timeline"][0]["data"]
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError,
-                KeyError, IndexError, ValueError) as e:
+                KeyError, IndexError, ValueError):
             if attempt == 3:
                 return None
             time.sleep(delays[attempt])
@@ -104,3 +104,55 @@ def corridor_ct04(corr: str, day: date) -> tuple[int | None, list[dict]]:
     baseline7 = s90 / max(len(points), 1) * 7
     return level, [{"source": "GDELT", "url": URL_SHORT,
                     "note": f"走廊{corr} 近7日覆盖和={s7:.4f} ÷ 基线折算7日={baseline7:.4f} → r={r:.2f} → ct04={level}（媒体覆盖代理口径）。query={query}"}]
+
+
+def _is_fetch_failure(ev: list[dict]) -> bool:
+    """该走廊证据是否为"抓取失败"（区别于"媒体沉默"——后者是有效口径结论，不算失败）。"""
+    return bool(ev) and ev[0]["note"].startswith("抓取失败")
+
+
+def corridors_ct04(day: date, gap: float = 10.0) -> tuple[dict[str, int | None], list[dict]]:
+    """全走廊 ct04 两段式抓取：主跑 → 失败走廊经 90s 冷却后重试一轮。
+    GDELT 429 是分钟级窗口且常整段 IP 生效：主跑连续 3 败即提前止损进入冷却；
+    冷却后若仍连续 2 败则判定配额耗尽，剩余走廊直接落基准档（不再空耗）。
+    返回 ({cid: 档位|None}, evidence)；失败证据合并为一条，避免状态页满屏红。"""
+    results: dict[str, int | None] = {}
+    evid: dict[str, list[dict]] = {}
+
+    def run_pass(cids: list[str]) -> None:
+        consecutive_fail = 0
+        for i, cid in enumerate(cids):
+            if i > 0:
+                time.sleep(gap)
+            level, ev = corridor_ct04(cid, day)
+            results[cid] = level
+            evid[cid] = ev
+            consecutive_fail = consecutive_fail + 1 if _is_fetch_failure(ev) else 0
+            if consecutive_fail >= 3:
+                for rest in cids[i + 1:]:
+                    results[rest] = None
+                    evid[rest] = [{"source": "GDELT", "url": URL_SHORT,
+                                   "note": f"抓取失败（限流/网络），走廊{rest} ct04 本日落基准档。"}]
+                return
+
+    cids = list(CORRIDOR_QUERY)
+    run_pass(cids)
+    failed = [c for c in cids if _is_fetch_failure(evid[c])]
+    if failed:
+        time.sleep(90)  # 冷却：让 GDELT 的分钟级限流窗口过去
+        run_pass(failed)
+
+    # ---- 证据整理：成功逐条留痕；媒体沉默逐条留痕（口径结论）；抓取失败合并为一条 ----
+    out_ev: list[dict] = []
+    still_failed: list[str] = []
+    for cid in cids:
+        ev = evid[cid]
+        if results[cid] is not None or not _is_fetch_failure(ev):
+            out_ev.extend(ev)
+        else:
+            still_failed.append(cid)
+    if still_failed:
+        out_ev.append({"source": "GDELT", "url": URL_SHORT,
+                       "note": f"走廊{'/'.join(still_failed)} 经冷却重试仍抓取失败（GDELT 限流/网络）→ "
+                               f"ct04 本日落基准档，其余走廊结果见上"})
+    return results, out_ev

@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from corridors import CORRIDOR_CITIES, CORRIDOR_IDS, CORRIDOR_NAMES  # noqa: E402
 from fetch_acled import fetch_security  # noqa: E402
-from fetch_gdelt import corridor_ct04  # noqa: E402
+from fetch_gdelt import corridors_ct04  # noqa: E402
 from fetch_hdx import fetch_fr03_monthly, score_fr03_from_counts  # noqa: E402
 from fetch_news import fetch_nodes_and_ports, st_suggestion_level  # noqa: E402
 from fetch_openmeteo import corridor_fr15  # noqa: E402
@@ -87,22 +87,17 @@ def build_snapshot(day: date, mock_acled: bool) -> tuple[dict, list[str], dict]:
                 r = (armed7 / base_daily) if base_daily > 0 else (0.0 if armed7 == 0 else 99.0)
                 corridors[cid]["ct04"] = score_ct04(r)
     else:
-        # 降级 → ③ GDELT：ct04 用媒体覆盖比值（真实）
+        # 降级 → ③ GDELT：ct04 用媒体覆盖比值（真实）；两段式抓取（主跑+冷却重试）
         evidence["fr03"] = list(sec_ev)
         evidence["ct04"] = []
         gap = float(os.environ.get("GDELT_GAP", "10"))
-        ct04_real = 0
-        for i, cid in enumerate(CORRIDOR_IDS):
-            if i > 0:
-                time.sleep(gap)  # GDELT 限流：走廊间串行间隔
+        ct04_levels, ct04_ev = corridors_ct04(day, gap=gap)
+        evidence["ct04"].extend(ct04_ev)
+        ct04_real = sum(1 for v in ct04_levels.values() if v is not None)
+        for cid in CORRIDOR_IDS:
             corridors[cid]["fr03"] = BASELINE["fr03"]
-            level, ev = corridor_ct04(cid, day)
-            evidence["ct04"].extend(ev)
-            if level is None:
-                corridors[cid]["ct04"] = BASELINE["ct04"]
-            else:
-                corridors[cid]["ct04"] = level
-                ct04_real += 1
+            v = ct04_levels.get(cid)
+            corridors[cid]["ct04"] = BASELINE["ct04"] if v is None else v
         ct04_entry = source_entry(
             "gdelt-proxy", ct04_real > 0,
             f"GDELT 媒体覆盖代理（{ct04_real}/8 走廊真实评分）"
