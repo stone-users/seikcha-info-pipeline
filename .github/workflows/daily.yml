@@ -1,15 +1,19 @@
 # ============================================================
 # 每日信息因子快照（生产调度）
-# 00:40 UTC = 北京 08:40 = 仰光 07:10 —— 错开整点高峰（GitHub 定时器在
-# 整点高负载时可能大幅延迟甚至跳过，2026-10-04 实测跳过一次），仍在工作时间前出数
+# 双 cron 兜底设计（GitHub 定时器高峰期会跳班：2026-10-04 跳过 01:00 班、
+# 2026-10-05 跳过 00:40 班，均实测）：
+#   第 1 班  00:40 UTC = 北京 08:40（正常出数时间）
+#   第 2 班  04:40 UTC = 北京 12:40（第 1 班被跳过时的当日兜底）
+# 幂等保护：若当天（UTC+8）快照已存在，第 2 班直接跳过抓取，不重复运行。
 # 提交历史 = 审计留痕（谁=bot/何时=提交时间/证据=snapshots 内 evidence + audit/*.md）
 # ============================================================
 name: daily-info-snapshot
 
 on:
   schedule:
-    - cron: "40 0 * * *"
-  workflow_dispatch: {}   # 手动触发兜底（定时被跳过/延迟时用）
+    - cron: "40 0 * * *"   # 北京 08:40 主班
+    - cron: "40 4 * * *"   # 北京 12:40 兜底班
+  workflow_dispatch: {}    # 手动触发兜底（两班都被跳过时用）
 
 permissions:
   contents: write
@@ -19,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 幂等检查需读取远端已有快照；rebase 推送也更稳
 
       - uses: actions/setup-python@v5
         with:
@@ -27,14 +33,21 @@ jobs:
       - name: 评分卡单元测试（不绿不发布）
         run: python -m unittest discover -s tests -v
 
-      - name: 生成当日快照（全链路免账号：Open-Meteo + GDELT/RSS + ACLED 公开月度表）
-        run: python pipeline/build_snapshot.py
+      - name: 生成当日快照（当天已有快照则幂等跳过）
+        run: |
+          TODAY=$(TZ=Asia/Shanghai date +%F)
+          if [ -f "snapshots/$TODAY.json" ]; then
+            echo "今天($TODAY)的快照已存在 → 幂等跳过抓取（双 cron 兜底设计的保护逻辑）"
+          else
+            echo "今天($TODAY)尚无快照 → 开始抓取生成"
+            python pipeline/build_snapshot.py
+          fi
 
       - name: 提交快照、状态页与审计（无变化则跳过提交）
         run: |
           git config user.name "seikcha-info-bot"
           git config user.email "actions@users.noreply.github.com"
           git add snapshots/ status/ audit/
-          git diff --cached --quiet || git commit -m "snapshot: $(date -u +%F) 每日信息因子快照（含状态页数据）"
+          git diff --cached --quiet || git commit -m "snapshot: $(TZ=Asia/Shanghai date +%F) 每日信息因子快照（含状态页数据）"
           git pull --rebase origin main   # 期间若有文档等人工提交，先变基再推（手动重跑同日文件会更新）
           git push
